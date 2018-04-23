@@ -12,6 +12,7 @@ package main
 import (
 	"fmt"
 	"github.com/adamkdean/fsm/pkg/fsm"
+	"time"
 )
 
 func main() {
@@ -27,19 +28,37 @@ func main() {
 	fsm := fsm.New()
 	fsm.Initialize(sm, "IDLE")
 
-	// Perform a valid transition
-	fmt.Printf("CurrentState: %s \n", fsm.CurrentState)
-	if err := fsm.Transition("STARTED"); err != nil {
-		fmt.Printf("Error transitioning: %v \n", err)
-		return
-	}
-	fmt.Printf("State changed to: %s \n", fsm.CurrentState)
+	// Create a general event
+	ch := make(chan string)
+	go func() {
+		for {
+			fmt.Printf("State changed to: %s\n", <-ch)
+		}
+	}()
 
-	// Perform an invalid transition
-	fmt.Printf("CurrentState: %s \n", fsm.CurrentState)
-	if err := fsm.Transition("IDLE"); err != nil {
-		fmt.Printf("Error transitioning: %v \n", err)
-		return
+	// Hook up the general event to all state transitions
+	fsm.OnTransition("IDLE", ch)
+	fsm.OnTransition("STARTED", ch)
+	fsm.OnTransition("STOPPED", ch)
+	fsm.OnTransition("FINISHED", ch)
+
+	// Perform some valid & invalid transitions
+	testTransition(fsm, "STARTED")  // Valid
+	testTransition(fsm, "STOPPED")  // Valid
+	testTransition(fsm, "IDLE")     // Invalid
+	testTransition(fsm, "STARTED")  // Valid
+	testTransition(fsm, "STOPPED")  // Valid
+	testTransition(fsm, "FINISHED") // Valid
+	testTransition(fsm, "IDLE")     // Invalid
+
+	// Keep alive
+	fmt.Scanln()
+}
+
+func testTransition(fsm *fsm.FSM, to string) {
+	fmt.Printf("%s -> %s\n", fsm.CurrentState, to)
+	if err := fsm.Transition(to); err != nil {
+		fmt.Printf("Error transitioning from %s -> %s: %v\n", fsm.CurrentState, to, err)
 	}
-	fmt.Printf("State changed to: %s \n", fsm.CurrentState)
+	time.Sleep(1 * time.Second)
 }
