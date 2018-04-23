@@ -17,11 +17,9 @@
 
 ### Install
 
-`go get github.com/adamkdean/fsm`
+`go get github.com/adamkdean/fsm/pkg/fsm`
 
 ### Import
-
-FSM uses [Standard Go Project Layout](https://github.com/golang-standards/project-layout), so you have to import the pkg from the `pkg/fsm` directory.
 
 `import "github.com/adamkdean/fsm/pkg/fsm"`
 
