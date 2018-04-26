@@ -48,6 +48,11 @@ func (f *FSM) Transition(to string) error {
 				e <- f.CurrentState
 			}
 
+			// Iterate through all wildcard events
+			for _, e := range f.EventMap["*"] {
+				e <- f.CurrentState
+			}
+
 			return nil
 		}
 	}
@@ -66,7 +71,7 @@ func (f *FSM) OnTransition(s string, ch chan string) error {
 }
 
 func (f *FSM) assureStateExists(s string) error {
-	if !funk.Contains(f.States, s) {
+	if !funk.Contains(f.States, s) && s != "*" {
 		return fmt.Errorf("Invalid state: %v", s)
 	}
 	return nil

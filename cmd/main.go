@@ -16,6 +16,8 @@ import (
 )
 
 func main() {
+	done := make(chan bool)
+
 	// Create a state map
 	sm := map[string][]string{
 		"IDLE":     []string{"STARTED"},
@@ -28,19 +30,25 @@ func main() {
 	fsm := fsm.New()
 	fsm.Initialize(sm, "IDLE")
 
-	// Create a general event
+	// Create and hook up the general event to all state transitions
 	ch := make(chan string)
 	go func() {
 		for {
 			fmt.Printf("State changed to: %s\n", <-ch)
 		}
 	}()
+	fsm.OnTransition("*", ch)
 
-	// Hook up the general event to all state transitions
-	fsm.OnTransition("IDLE", ch)
-	fsm.OnTransition("STARTED", ch)
-	fsm.OnTransition("STOPPED", ch)
-	fsm.OnTransition("FINISHED", ch)
+	// Create and hook up an event for just FINISHED state transition
+	chf := make(chan string)
+	go func() {
+		for {
+			<-chf
+			fmt.Println("FINISHED! Exiting program...")
+			done <- true
+		}
+	}()
+	fsm.OnTransition("FINISHED", chf)
 
 	// Perform some valid & invalid transitions
 	testTransition(fsm, "STARTED")  // Valid
@@ -49,10 +57,9 @@ func main() {
 	testTransition(fsm, "STARTED")  // Valid
 	testTransition(fsm, "STOPPED")  // Valid
 	testTransition(fsm, "FINISHED") // Valid
-	testTransition(fsm, "IDLE")     // Invalid
 
-	// Keep alive
-	fmt.Scanln()
+	// wait for done signal
+	<-done
 }
 
 func testTransition(fsm *fsm.FSM, to string) {
