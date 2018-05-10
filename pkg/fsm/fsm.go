@@ -14,8 +14,8 @@ import (
 	"github.com/thoas/go-funk"
 )
 
-// FSM is the finite state machine struct
-type FSM struct {
+// FiniteStateMachine is the finite state machine struct
+type FiniteStateMachine struct {
 	CurrentState string
 	States       []string
 	StateMap     map[string][]string
@@ -24,7 +24,7 @@ type FSM struct {
 
 // Initialize takes a state map and an initial
 // state and initializes the state machine
-func (f *FSM) Initialize(sm map[string][]string, s string) {
+func (f *FiniteStateMachine) Initialize(sm map[string][]string, s string) {
 	f.CurrentState = s
 	f.States = funk.Keys(sm).([]string)
 	f.StateMap = sm
@@ -32,7 +32,7 @@ func (f *FSM) Initialize(sm map[string][]string, s string) {
 }
 
 // Transition changes the state when permissable
-func (f *FSM) Transition(to string) error {
+func (f *FiniteStateMachine) Transition(to string) error {
 	if err := f.assureStateExists(to); err != nil {
 		return err
 	}
@@ -61,7 +61,7 @@ func (f *FSM) Transition(to string) error {
 }
 
 // OnTransition hooks up event channels to state transitions
-func (f *FSM) OnTransition(s string, ch chan string) error {
+func (f *FiniteStateMachine) OnTransition(s string, ch chan string) error {
 	if err := f.assureStateExists(s); err != nil {
 		return err
 	}
@@ -70,7 +70,7 @@ func (f *FSM) OnTransition(s string, ch chan string) error {
 	return nil
 }
 
-func (f *FSM) assureStateExists(s string) error {
+func (f *FiniteStateMachine) assureStateExists(s string) error {
 	if !funk.Contains(f.States, s) && s != "*" {
 		return fmt.Errorf("Invalid state: %v", s)
 	}
@@ -78,6 +78,6 @@ func (f *FSM) assureStateExists(s string) error {
 }
 
 // New returns a new, empty instance
-func New() *FSM {
-	return &FSM{}
+func New() *FiniteStateMachine {
+	return &FiniteStateMachine{}
 }

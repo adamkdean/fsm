@@ -29,7 +29,7 @@ func main() {
 	testTransition(fsm, "A") // C -> A = Invalid
 }
 
-func testTransition(fsm *fsm.FSM, to string) {
+func testTransition(fsm *fsm.FiniteStateMachine, to string) {
 	fmt.Printf("%s -> %s\n", fsm.CurrentState, to)
 	if err := fsm.Transition(to); err != nil {
 		fmt.Printf("Error transitioning from %s -> %s: %v\n", fsm.CurrentState, to, err)
